@@ -45,7 +45,7 @@ function getResultRandom(){
     }
 }
 
-function getEmbedMichokal(user, result){
+function getEmbedRoulette(user, result){
     var embed = new EmbedBuilder();
     embed.setColor(0xff0000)
     embed.setTitle(user.username)
@@ -57,7 +57,7 @@ function getEmbedMichokal(user, result){
     return embed;
 }
 
-async function michokal(message){
+async function roulette(message){
     message.channel.send("5 :joy:");
     await new Promise(resolve => setTimeout(resolve, 1000));
     message.channel.send("4 :thinking:");
@@ -76,7 +76,7 @@ async function michokal(message){
                 randIdx = rand(g.memberCount);
                 while (list.at(randIdx).user.bot)
                     randIdx = rand(g.memberCount);
-                message.channel.send({ embeds : [getEmbedMichokal(list.at(randIdx ).user, getResultRandom())] })
+                message.channel.send({ embeds : [getEmbedRoulette(list.at(randIdx ).user, getResultRandom())] })
             })
             .catch(console.error)
     else
@@ -89,7 +89,7 @@ async function michokal(message){
                         if (value.user.bot)
                             message.channel.send("Le destin des bots ne vous appartient pas! è_é");
                         else
-                            message.channel.send({ embeds : [getEmbedMichokal(value.user, getResultRandom())] });
+                            message.channel.send({ embeds : [getEmbedRoulette(value.user, getResultRandom())] });
                         break;
                     }
                 if (!found)
@@ -118,7 +118,7 @@ function clean(message){
 // messageCreate Event
 
 const mapMessageCreate = {
-    "michokal" : michokal,
+    "roulette" : roulette,
     "clean" : clean
 }
 
