@@ -31,6 +31,12 @@ function hasRole(member, roleId){
     return false;
 }
 
+function msToMS(time) {
+    var minutes = Math.floor(time / 60000);
+    var seconds = ((time % 60000) / 1000).toFixed(0);
+    return minutes + ":" + (seconds < 10 ? '0' : '') + seconds;
+  }
+
 // COMMANDS
 
 function getResultRandom(){
@@ -55,12 +61,12 @@ function getResultRandom(){
 
 function getEmbedRoulette(member, result){
     var embed = new EmbedBuilder();
-    embed.setColor(0xff0000)
-    embed.setTitle(member.displayName)
-    embed.setDescription("Le destin a choisi pour toi: **" + result + "**")
-    embed.setThumbnail(member.displayAvatarURL())
-    embed.setImage("https://static.euronews.com/articles/stories/06/46/57/16/1000x563_cmsv2_c285593a-edbf-5f1c-a7c3-bd082d34c186-6465716.jpg")
-    embed.setTimestamp()
+    embed.setColor(0xff0000);
+    embed.setTitle(member.displayName);
+    embed.setDescription("Le destin a choisi pour toi: **" + result + "**");
+    embed.setThumbnail(member.displayAvatarURL());
+    embed.setImage("https://static.euronews.com/articles/stories/06/46/57/16/1000x563_cmsv2_c285593a-edbf-5f1c-a7c3-bd082d34c186-6465716.jpg");
+    embed.setTimestamp();
     return embed;
 }
 
@@ -90,7 +96,7 @@ async function roulette(message){
             var result = getResultRandom();
             message.channel.send({ embeds : [getEmbedRoulette(list.at(rndIdx), result)] })
             if (result === "banni(e)")
-                list.at(rndIdx).ban();
+                list.at(rndIdx).kick();
         })
         .catch(console.error)
     }
@@ -101,7 +107,7 @@ async function roulette(message){
             var result = getResultRandom();
             message.channel.send({ embeds : [getEmbedRoulette(message.mentions.members.at(0), result)] });
             if (result === "banni(e)")
-                message.mentions.members.at(0).ban();
+                message.mentions.members.at(0).kick();
         }
     }
     else if (typeof usernameTmp === 'undefined')
@@ -113,7 +119,7 @@ async function roulette(message){
                 var result = getResultRandom();
                 message.channel.send({ embeds : [getEmbedRoulette(list.at(rndIdx), result)] })
                 if (result === "banni(e)")
-                    list.at(rndIdx).ban();
+                    list.at(rndIdx).kick();
             })
             .catch(console.error)
     else
@@ -129,7 +135,7 @@ async function roulette(message){
                             var result = getResultRandom();
                             message.channel.send({ embeds : [getEmbedRoulette(value, result)] });
                             if (result === "banni(e)")
-                                value.ban();
+                                value.kick();
                         }
                         break;
                     }
@@ -156,11 +162,25 @@ function clean(message){
         .catch(console.error);
 }
 
+function getEmbedRoulette(member, duration){
+    var embed = new EmbedBuilder();
+    embed.setColor(0xff0000);
+    embed.setTitle(member.displayName);
+    embed.setDescription("Mute pendant " + msToMS(duration));
+    embed.setThumbnail(member.displayAvatarURL());
+    embed.addFields({ name : "Raison", value : "Feur", inline : true });
+    embed.setImage("https://static.euronews.com/articles/stories/06/46/57/16/1000x563_cmsv2_c285593a-edbf-5f1c-a7c3-bd082d34c186-6465716.jpg");
+    embed.setTimestamp();
+    return embed;
+}
+
 function luigi(message){
     var max = 9 * 60 * 1000;
     var rndValue = rand(max) + 60 * 1000;
     message.guild.members.fetch("220639936053772288")
-        .then(member => member.timeout(rndValue, "Feur"))
+        .then(member => {
+            member.timeout(rndValue, "Feur")
+        })
         .catch(console.error);
 }
 
