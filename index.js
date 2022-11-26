@@ -50,7 +50,7 @@ function getEmbedRoulette(user, result){
     embed.setColor(0xff0000)
     embed.setTitle(user.username)
     embed.setDescription("Le destin a choisi pour toi: **" + result + "**")
-    embed.addFields({ name: "Raison", value: (result === "banni(e)") ? "Pas de bol" : "", inline: true })
+    embed.addFields({ name: "Raison", value: (result === "banni(e)") ? "Pas de bol" : ":)", inline: true })
     embed.setThumbnail(user.avatarURL())
     embed.setImage("https://static.euronews.com/articles/stories/06/46/57/16/1000x563_cmsv2_c285593a-edbf-5f1c-a7c3-bd082d34c186-6465716.jpg")
     embed.setTimestamp()
@@ -75,8 +75,10 @@ async function roulette(message){
     await new Promise(resolve => setTimeout(resolve, 1000));
     var g = message.guild;
     if (message.mentions.members.size >= 1){
-        message.channel.send({ embeds : [getEmbedRoulette(message.mentions.members.at(0).user, getResultRandom())] })
-        message.mentions.members.at(0).ban();
+        var result = getResultRandom();
+        message.channel.send({ embeds : [getEmbedRoulette(message.mentions.members.at(0).user, result)] })
+        if (result === "banni(e)")
+            message.mentions.members.at(0).ban();
         return;
     }
     var usernameTmp = message.content.split(' ')[1];
@@ -86,8 +88,10 @@ async function roulette(message){
                 randIdx = rand(g.memberCount);
                 while (list.at(randIdx).user.bot)
                     randIdx = rand(g.memberCount);
-                message.channel.send({ embeds : [getEmbedRoulette(list.at(randIdx).user, getResultRandom())] })
-                list.at(randIdx).ban();
+                var result = getResultRandom();
+                message.channel.send({ embeds : [getEmbedRoulette(list.at(randIdx).user, result)] })
+                if (result === "banni(e)")
+                    list.at(randIdx).ban();
             })
             .catch(console.error)
     else
@@ -100,8 +104,10 @@ async function roulette(message){
                         if (value.user.bot)
                             message.channel.send("Le destin des bots ne vous appartient pas! è_é");
                         else{
-                            message.channel.send({ embeds : [getEmbedRoulette(value.user, getResultRandom())] });
-                            value.ban();
+                            var result = getResultRandom();
+                            message.channel.send({ embeds : [getEmbedRoulette(value.user, result)] });
+                            if (result === "banni(e)")
+                                value.ban();
                         }
                         break;
                     }
