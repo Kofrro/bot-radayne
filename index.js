@@ -162,7 +162,7 @@ function clean(message){
         .catch(console.error);
 }
 
-function getEmbedRoulette(member, duration){
+function getEmbedLuigi(member, duration){
     var embed = new EmbedBuilder();
     embed.setColor(0xff0000);
     embed.setTitle(member.displayName);
@@ -175,11 +175,11 @@ function getEmbedRoulette(member, duration){
 }
 
 function luigi(message){
-    var max = 9 * 60 * 1000;
-    var rndValue = rand(max) + 60 * 1000;
+    var rndDuration = rand(9 * 60 * 1000) + 60 * 1000;
     message.guild.members.fetch("220639936053772288")
         .then(member => {
-            member.timeout(rndValue, "Feur")
+            member.timeout(rndDuration, "Feur");
+            message.channel.send({ embeds : [getEmbedLuigi(member, rndDuration)] });
         })
         .catch(console.error);
 }
