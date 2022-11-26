@@ -50,7 +50,7 @@ function getEmbedRoulette(user, result){
     embed.setColor(0xff0000)
     embed.setTitle(user.username)
     embed.setDescription("Le destin a choisi pour toi: **" + result + "**")
-    embed.addFields({ name: "Raison", value: (result === "banni(e)") ? "Pas de bol KEKW ICANT" : "Full luck ^^", inline: true })
+    embed.addFields({ name: "Raison", value: (result === "banni(e)") ? "Sale merde :middle_finger:" : ":octa:", inline: true })
     embed.setThumbnail(user.avatarURL())
     embed.setImage("https://static.euronews.com/articles/stories/06/46/57/16/1000x563_cmsv2_c285593a-edbf-5f1c-a7c3-bd082d34c186-6465716.jpg")
     embed.setTimestamp()
@@ -80,7 +80,7 @@ async function roulette(message){
             })
             .catch(console.error)
     else
-        g.members.list({limit : 200})
+        g.members.list({limit : 500})
             .then(list => {
                 var found = false;
                 for (var [key, value] of list)
