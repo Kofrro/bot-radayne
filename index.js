@@ -150,7 +150,7 @@ function clean(message){
         message.channel.send("Commande utilisable que par le lead de ce bot ^^ :koala:");
         return;
     }
-    var nb = message.content.split(' ')[1];
+    var nb = parseInt(message.content.split(' ')[1]);
     if (isNaN(nb))
         nb = 99;
     var ms = message.channel.messages;
