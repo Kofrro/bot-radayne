@@ -89,8 +89,8 @@ async function roulette(message){
                 rndIdx = rand(g.memberCount);
             var result = getResultRandom();
             message.channel.send({ embeds : [getEmbedRoulette(list.at(rndIdx), result)] })
-            if (result === "banni(e)"){}
-                // list.at(rndIdx).ban();
+            if (result === "banni(e)")
+                list.at(rndIdx).ban();
         })
         .catch(console.error)
     }
@@ -100,8 +100,8 @@ async function roulette(message){
         else{
             var result = getResultRandom();
             message.channel.send({ embeds : [getEmbedRoulette(message.mentions.members.at(0), result)] });
-            if (result === "banni(e)"){}
-                // message.mentions.members.at(0).ban();
+            if (result === "banni(e)")
+                message.mentions.members.at(0).ban();
         }
     }
     else if (typeof usernameTmp === 'undefined')
@@ -112,8 +112,8 @@ async function roulette(message){
                     rndIdx = rand(g.memberCount);
                 var result = getResultRandom();
                 message.channel.send({ embeds : [getEmbedRoulette(list.at(rndIdx), result)] })
-                if (result === "banni(e)"){}
-                    // list.at(rndIdx).ban();
+                if (result === "banni(e)")
+                    list.at(rndIdx).ban();
             })
             .catch(console.error)
     else
@@ -128,8 +128,8 @@ async function roulette(message){
                         else{
                             var result = getResultRandom();
                             message.channel.send({ embeds : [getEmbedRoulette(value, result)] });
-                            if (result === "banni(e)"){}
-                                // value.ban();
+                            if (result === "banni(e)")
+                                value.ban();
                         }
                         break;
                     }
