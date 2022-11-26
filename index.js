@@ -1,8 +1,8 @@
 // INIT
 
-const { prefix, token, idLead } = require("./config.json")
+const { prefix, token, idLead, idRoleLead } = require("./config.json")
 
-const { Client, GatewayIntentBits, EmbedBuilder, MessageMentions } = require('discord.js');
+const { Client, GatewayIntentBits, EmbedBuilder, GuildMemberRoleManager } = require('discord.js');
 
 const client = new Client({
     intents: [
@@ -21,6 +21,14 @@ client.on("ready", () => {
 
 function rand(max){
     return Math.floor(Math.random() * max);
+}
+
+function hasRole(member, roleId){
+    var roles = member.roles.cache.map((role) => role.id);
+    for (var i = 0; i < roles.length; i++)
+        if (roles[i] === roleId)
+            return true;
+    return false;
 }
 
 // COMMANDS
@@ -45,22 +53,20 @@ function getResultRandom(){
     }
 }
 
-function getEmbedRoulette(user, result){
+function getEmbedRoulette(member, result){
     var embed = new EmbedBuilder();
     embed.setColor(0xff0000)
-    embed.setTitle(user.username)
+    embed.setTitle(member.displayName)
     embed.setDescription("Le destin a choisi pour toi: **" + result + "**")
-    embed.addFields({ name: "Raison", value: (result === "banni(e)") ? "Pas de bol" : ":)", inline: true })
-    embed.setThumbnail(user.avatarURL())
+    embed.setThumbnail(member.displayAvatarURL())
     embed.setImage("https://static.euronews.com/articles/stories/06/46/57/16/1000x563_cmsv2_c285593a-edbf-5f1c-a7c3-bd082d34c186-6465716.jpg")
     embed.setTimestamp()
     return embed;
 }
 
 async function roulette(message){
-    // for (r in message.mentions.members.first().roles)
-    if (message.author.id != idLead){
-        message.channel.send("Commande utilisable que par le lead de ce bot ^^ :koala:");
+    if (!hasRole(message.member, idRoleLead)){
+        message.channel.send("Commande utilisable que par **octa suprématie** ^^ :koala:");
         return;
     }
     message.channel.send("5 :joy:");
@@ -74,24 +80,40 @@ async function roulette(message){
     message.channel.send("1 :gun:");
     await new Promise(resolve => setTimeout(resolve, 1000));
     var g = message.guild;
-    if (message.mentions.members.size >= 1){
-        var result = getResultRandom();
-        message.channel.send({ embeds : [getEmbedRoulette(message.mentions.members.at(0).user, result)] })
-        if (result === "banni(e)")
-            message.mentions.members.at(0).ban();
-        return;
-    }
     var usernameTmp = message.content.split(' ')[1];
-    if (typeof usernameTmp === 'undefined')
-        g.members.list({limit : 200})
+    if (message.mentions.roles.size >= 1){
+        g.members.list({limit : 500})
+        .then(list => {
+            rndIdx = rand(g.memberCount);
+            while (!hasRole(list.at(rndIdx), message.mentions.roles.at(0).id))
+                rndIdx = rand(g.memberCount);
+            var result = getResultRandom();
+            message.channel.send({ embeds : [getEmbedRoulette(list.at(rndIdx), result)] })
+            if (result === "banni(e)"){}
+                // list.at(rndIdx).ban();
+        })
+        .catch(console.error)
+    }
+    else if (message.mentions.members.size >= 1){
+        if (message.mentions.members.at(0).user.bot)
+            message.channel.send("Le destin des bots ne vous appartient pas! è_é");
+        else{
+            var result = getResultRandom();
+            message.channel.send({ embeds : [getEmbedRoulette(message.mentions.members.at(0), result)] });
+            if (result === "banni(e)"){}
+                // message.mentions.members.at(0).ban();
+        }
+    }
+    else if (typeof usernameTmp === 'undefined')
+        g.members.list({limit : 500})
             .then(list => {
-                randIdx = rand(g.memberCount);
-                while (list.at(randIdx).user.bot)
-                    randIdx = rand(g.memberCount);
+                rndIdx = rand(g.memberCount);
+                while (list.at(rndIdx).user.bot)
+                    rndIdx = rand(g.memberCount);
                 var result = getResultRandom();
-                message.channel.send({ embeds : [getEmbedRoulette(list.at(randIdx).user, result)] })
-                if (result === "banni(e)")
-                    list.at(randIdx).ban();
+                message.channel.send({ embeds : [getEmbedRoulette(list.at(rndIdx), result)] })
+                if (result === "banni(e)"){}
+                    // list.at(rndIdx).ban();
             })
             .catch(console.error)
     else
@@ -99,15 +121,15 @@ async function roulette(message){
             .then(list => {
                 var found = false;
                 for (var [key, value] of list)
-                    if (value.user.username.toLowerCase().startsWith(usernameTmp.toLowerCase())){
+                    if (value.displayName.toLowerCase().startsWith(usernameTmp.toLowerCase())){
                         found = true;
                         if (value.user.bot)
                             message.channel.send("Le destin des bots ne vous appartient pas! è_é");
                         else{
                             var result = getResultRandom();
-                            message.channel.send({ embeds : [getEmbedRoulette(value.user, result)] });
-                            if (result === "banni(e)")
-                                value.ban();
+                            message.channel.send({ embeds : [getEmbedRoulette(value, result)] });
+                            if (result === "banni(e)"){}
+                                // value.ban();
                         }
                         break;
                     }
