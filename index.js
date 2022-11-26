@@ -71,7 +71,7 @@ function getEmbedRoulette(member, result){
 }
 
 async function roulette(message){
-    if (!hasRole(message.member, idRoleLead)){
+    if (message.author.id != idLead && !hasRole(message.member, idRoleLead)){
         message.channel.send("Commande utilisable que par **octa suprématie** ^^ :koala:");
         return;
     }
