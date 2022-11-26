@@ -58,6 +58,10 @@ function getEmbedRoulette(user, result){
 }
 
 async function roulette(message){
+    if (message.author.id != idLead){
+        message.channel.send("Commande utilisable que par le lead de ce bot ^^ :koala:");
+        return;
+    }
     message.channel.send("5 :joy:");
     await new Promise(resolve => setTimeout(resolve, 1000));
     message.channel.send("4 :thinking:");
