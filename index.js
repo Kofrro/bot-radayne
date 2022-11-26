@@ -2,7 +2,7 @@
 
 const { prefix, token, idLead } = require("./config.json")
 
-const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
+const { Client, GatewayIntentBits, EmbedBuilder, MessageMentions } = require('discord.js');
 
 const client = new Client({
     intents: [
@@ -58,6 +58,7 @@ function getEmbedRoulette(user, result){
 }
 
 async function roulette(message){
+    // for (r in message.mentions.members.first().roles)
     if (message.author.id != idLead){
         message.channel.send("Commande utilisable que par le lead de ce bot ^^ :koala:");
         return;
@@ -73,6 +74,10 @@ async function roulette(message){
     message.channel.send("1 :gun:");
     await new Promise(resolve => setTimeout(resolve, 1000));
     var g = message.guild;
+    if (message.mentions.members.size >= 1){
+        message.channel.send({ embeds : [getEmbedRoulette(message.mentions.members.at(0).user, getResultRandom())] })
+        return;
+    }
     var usernameTmp = message.content.split(' ')[1];
     if (typeof usernameTmp === 'undefined')
         g.members.list({limit : 200})
@@ -80,7 +85,7 @@ async function roulette(message){
                 randIdx = rand(g.memberCount);
                 while (list.at(randIdx).user.bot)
                     randIdx = rand(g.memberCount);
-                message.channel.send({ embeds : [getEmbedRoulette(list.at(randIdx ).user, getResultRandom())] })
+                message.channel.send({ embeds : [getEmbedRoulette(list.at(randIdx).user, getResultRandom())] })
             })
             .catch(console.error)
     else
