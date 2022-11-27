@@ -200,15 +200,15 @@ function luigi(message){
 }
 
 function master(message){
-    message.channel.send("@everyone Caaaaaaaaalme les gars caaaaaaaalme");
+    message.channel.send("Caaaaaaaaalme les gars caaaaaaaalme");
 }
 
 function viking(message){
-    message.channel.send("@everyone Oh razzia oh ");
+    message.channel.send("Oh razzia oh ");
 }
 
 function ox(message){
-    message.channel.send("@everyone Les gars à trois dites tous OXXXXX WIIIIN");
+    message.channel.send("Les gars à trois dites tous OXXXXX WIIIIN");
 }
 
 function ezpk(message){
