@@ -2,7 +2,7 @@
 
 const { prefix, token, idLead, idRoleLead } = require("./config.json")
 
-const { Client, GatewayIntentBits, EmbedBuilder, GuildMemberRoleManager } = require('discord.js');
+const { Client, GatewayIntentBits, EmbedBuilder, GuildMemberRoleManager, DMChannel } = require('discord.js');
 
 const client = new Client({
     intents: [
@@ -88,20 +88,19 @@ async function roulette(message){
         await new Promise(resolve => setTimeout(resolve, 1000));
         message.channel.send("1 :gun:");
         await new Promise(resolve => setTimeout(resolve, 1000));
-        var g = message.guild;
         var usernameTmp = message.content.split(' ')[1];
         if (message.mentions.roles.size >= 1){
-            g.members.list({limit : 500})
-            .then(list => {
-                rndIdx = rand(g.memberCount);
-                while (!hasRole(list.at(rndIdx), message.mentions.roles.at(0).id))
-                    rndIdx = rand(g.memberCount);
-                var result = getResultRandom();
-                message.channel.send({ embeds : [getEmbedRoulette(list.at(rndIdx), result)] })
-                if (result === "banni(e)" && idLead !== "272097719798071298")
-                    list.at(rndIdx).kick();
-            })
-            .catch(console.error)
+            message.guild.members.list({limit : 500})
+                .then(list => {
+                    rndIdx = rand(message.guild.memberCount);
+                    while (!hasRole(list.at(rndIdx), message.mentions.roles.at(0).id))
+                        rndIdx = rand(message.guild.memberCount);
+                    var result = getResultRandom();
+                    message.channel.send({ embeds : [getEmbedRoulette(list.at(rndIdx), result)] })
+                    if (result === "banni(e)" && idLead !== "272097719798071298")
+                        list.at(rndIdx).kick();
+                })
+                .catch(console.error)
         }
         else if (message.mentions.members.size >= 1){
             if (message.mentions.members.at(0).user.bot)
@@ -114,11 +113,11 @@ async function roulette(message){
             }
         }
         else if (typeof usernameTmp === 'undefined')
-            g.members.list({limit : 500})
+        message.guild.members.list({limit : 500})
                 .then(list => {
-                    rndIdx = rand(g.memberCount);
+                    rndIdx = rand(message.guild.memberCount);
                     while (list.at(rndIdx).user.bot)
-                        rndIdx = rand(g.memberCount);
+                        rndIdx = rand(message.guild.memberCount);
                     var result = getResultRandom();
                     message.channel.send({ embeds : [getEmbedRoulette(list.at(rndIdx), result)] })
                     if (result === "banni(e)" && idLead !== "272097719798071298")
@@ -126,7 +125,7 @@ async function roulette(message){
                 })
                 .catch(console.error)
         else
-            g.members.list({limit : 500})
+            message.guild.members.list({limit : 500})
                 .then(list => {
                     var found = false;
                     for (var [key, value] of list)
@@ -178,6 +177,44 @@ function clean(message){
     }
 }
 
+function ava(message){
+    if (message.author.id != idLead)
+        message.guild.members.fetch(idLead)
+            .then(member => message.channel.send(`Commande utilisable que par **${member.displayName}**`))
+            .catch(console.error);
+    else if (message.mentions.roles.size >= 1){
+        var idxSpace = message.content.indexOf(' ', message.content.indexOf('@'));
+        if (idxSpace !== -1){
+            var m = message.content.slice(idxSpace + 1);
+            message.guild.members.list({limit : 500})
+                .then(list => {
+                    for (var i = 0; i < list.size; i++)
+                        if(hasRole(list.at(i), message.mentions.roles.at(0).id))
+                            list.at(i).createDM()
+                                .then(channelDM => channelDM.send(m))
+                                .catch(console.error);
+                })
+                .catch(console.error)
+        }
+    }
+}
+
+function akro(message){
+    const sentences = [
+        "Ahah mon fr t'inquiète pas",
+        "Ah mais les gars, je le tue jamais",
+        "Non mais c'est loose",
+        "Ecoute moi bien petite merde",
+        "Même jouer une classe simple tu sais pas faire",
+        "Y'en a pas un qui sait jouer dans cette guilde de merde",
+        "On peut pas perdre avec mon niveau actuel",
+        "Tali il est toujours pas mort ton lapin?",
+        "Corta j'crois que t’as pas compris, tout ce qui est à toi est à moi et tout ce qui est à moi est à moi",
+        "Cette guilde me sabote"
+    ];
+    message.channel.send(sentences[rand(sentences.length)]);
+}
+
 function getEmbedLuigi(member, duration){
     var embed = new EmbedBuilder();
     embed.setTitle(member.displayName);
@@ -224,6 +261,8 @@ function gasy(message){
 const mapMessageCreate = {
     "roulette" : roulette,
     "clean" : clean,
+    "ava" : ava,
+    "akro" : akro,
     "ftgluigi" : luigi,
     "master" : master,
     "viking" : viking,
