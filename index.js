@@ -1,5 +1,7 @@
 // INIT
 
+const fs = require("fs/promises");
+
 const { prefix, token, idLead, idRoleLead } = require("./config.json")
 
 const { Client, GatewayIntentBits, EmbedBuilder, GuildMemberRoleManager, DMChannel } = require('discord.js');
@@ -33,22 +35,32 @@ function hasRole(member, roleId){
     return false;
 }
 
-function msToMS(time) {
-    var minutes = Math.floor(time / 60000);
-    var seconds = ((time % 60000) / 1000).toFixed(0);
-    return minutes + ":" + (seconds < 10 ? '0' : '') + seconds;
+function padTo2Digits(num) {
+    return num.toString().padStart(2, '0');
+}
+
+function msToHMS(milliseconds) {
+    let seconds = Math.floor(milliseconds / 1000);
+    let minutes = Math.floor(seconds / 60);
+    let hours = Math.floor(minutes / 60);
+    seconds = seconds % 60;
+    minutes = minutes % 60;
+    var res = "";
+    if (hours > 0)
+        res += `${padTo2Digits(hours)}h`;
+    if (minutes > 0)
+        res += `${padTo2Digits(minutes)}m`;
+    return res + `${padTo2Digits(seconds)}s`;
 }
 
 // COMMANDS
 
-function getResultRandom(){
-    // Partie à modifier pour ajouter des résultats
+function getResultRouletteRandom(){
     const resultProba = new Map();
-    resultProba.set("banni(e)", 4);
-    resultProba.set("sauvé(e)", 4);
-    resultProba.set("pépites", 1);
-
-    // Ne pas modifier la suite
+    resultProba.set("timeout", 5);
+    resultProba.set("perte de kamas", 5);
+    resultProba.set("sauvé(e)", 5);
+    resultProba.set("gain de kamas", 1);
     var maxProba = 0;
     for (var [key, value] of resultProba)
         maxProba += value;
@@ -61,67 +73,133 @@ function getResultRandom(){
     }
 }
 
-function getEmbedRoulette(member, result){
+async function updateJackpotRoulette(value){
+    try{
+        const data = await fs.readFile("jackpot.txt");
+        var valTmp = parseInt(data.toString())
+        await fs.writeFile("jackpot.txt", `${valTmp - value}`);
+    }
+    catch (e){
+        console.error(e);
+    }
+}
+
+async function getJackpotRoulette(){
+    try{
+        const data = await fs.readFile("jackpot.txt");
+        return parseInt(data.toString());
+    }
+    catch (e){
+        console.error(e);
+    }
+    return -1;
+}
+
+function canUseRoulette(id){
+
+    if (id == idLead) return true;
+    return true;
+}
+
+async function getValueRoulette(member, result){
+    var value = 0;
+    if (result === "timeout" && idLead !== "272097719798071298"){
+        value = 5 * 60 * 1000 + rand(5 * 59 * 60 * 1000);
+        member.timeout(value);
+    }
+    else if (result === "perte de kamas"){
+        value = -100000 * (rand(4) + 1);
+        await updateJackpotRoulette(value);
+    }
+    else if (result === "gain de kamas"){
+        value = 100000 * (rand(4) + 1);
+        await updateJackpotRoulette(value);
+    }
+    return value;
+}
+
+async function getEmbedRoulette(member, result, value){
     var embed = new EmbedBuilder();
     embed.setTitle(member.displayName);
-    embed.setDescription("Le destin a choisi pour toi: **" + result + "**");
+    embed.setDescription("Sentence -> **" + result + "**");
+    if (result ===  "timeout")
+        embed.addFields({ name : "Durée", value : msToHMS(value), inline : true });
+    else if (result === "perte de kamas")
+        embed.addFields({ name : "Nombre de kamas", value : `${value}`, inline : true });
+    else if (result === "gain de kamas")
+        embed.addFields({ name : "Nombre de kamas", value : `${value}`, inline : true });
+    var jackpot = await getJackpotRoulette();
+    embed.addFields({ name : "Cagnotte actuelle", value : `${jackpot}`, inline : true });
     embed.setThumbnail(member.displayAvatarURL());
     embed.setImage(urlImageKoala);
     embed.setTimestamp();
     return embed;
 }
 
+async function countdownRoulette(channel){
+    channel.send("5 :joy:");
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    channel.send("4 :thinking:");
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    channel.send("3 :eyes:");
+    await new Promise(resolve => setTimeout(resolve, 1000)); 
+    channel.send("2 :smirk:");
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    channel.send("1 :gun:");
+    await new Promise(resolve => setTimeout(resolve, 1000));
+}
+
+function applyRoulette(member, channel){
+    var result = getResultRouletteRandom();
+    getValueRoulette(member, result)
+        .then(val => getEmbedRoulette(member, result, val)
+            .then(embed => channel.send({ embeds : [embed] }))
+            .catch(console.error))
+        .catch(console.error);
+}
+
+var rouletteActive = false;
+var rouletteUser = "";
 async function roulette(message){
+    if (rouletteActive){
+        message.channel.send(`La roulette est déjà en cours d'utilisation par **${rouletteUser}**, veuillez patienter`);
+        return;
+    }
+    rouletteActive = true;
+    rouletteUser = message.member.displayName;
     if (message.author.id != idLead && !hasRole(message.member, idRoleLead)){
         message.guild.roles.fetch(idRoleLead)
             .then(role => message.channel.send(`Commande utilisable que par les membres ayant le rôle **${role.name}**`))
             .catch(console.error);
     }
+    else if (!canUseRoulette(message.author.id))
+            message.channel.send("Tu as déjà utilisé la roulette ces dernières 24h");
     else {
-        message.channel.send("5 :joy:");
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        message.channel.send("4 :thinking:");
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        message.channel.send("3 :eyes:");
-        await new Promise(resolve => setTimeout(resolve, 1000)); 
-        message.channel.send("2 :smirk:");
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        message.channel.send("1 :gun:");
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await countdownRoulette(message.channel);
         var usernameTmp = message.content.split(' ')[1];
         if (message.mentions.roles.size >= 1){
             message.guild.members.list({limit : 500})
                 .then(list => {
                     rndIdx = rand(message.guild.memberCount);
-                    while (!hasRole(list.at(rndIdx), message.mentions.roles.at(0).id))
+                    while (!hasRole(list.at(rndIdx), message.mentions.roles.at(0).id) || list.at(rndIdx).user.bot)
                         rndIdx = rand(message.guild.memberCount);
-                    var result = getResultRandom();
-                    message.channel.send({ embeds : [getEmbedRoulette(list.at(rndIdx), result)] })
-                    if (result === "banni(e)" && idLead !== "272097719798071298")
-                        list.at(rndIdx).kick();
+                    applyRoulette(list.at(rndIdx), message.channel);
                 })
                 .catch(console.error)
         }
         else if (message.mentions.members.size >= 1){
             if (message.mentions.members.at(0).user.bot)
                 message.channel.send("Le destin des bots ne vous appartient pas! è_é");
-            else{
-                var result = getResultRandom();
-                message.channel.send({ embeds : [getEmbedRoulette(message.mentions.members.at(0), result)] });
-                if (result === "banni(e)" && idLead !== "272097719798071298")
-                    message.mentions.members.at(0).kick();
-            }
+            else
+                applyRoulette(message.mentions.members.at(0), message.channel);
         }
         else if (typeof usernameTmp === 'undefined')
-        message.guild.members.list({limit : 500})
+            message.guild.members.list({limit : 500})
                 .then(list => {
                     rndIdx = rand(message.guild.memberCount);
                     while (list.at(rndIdx).user.bot)
                         rndIdx = rand(message.guild.memberCount);
-                    var result = getResultRandom();
-                    message.channel.send({ embeds : [getEmbedRoulette(list.at(rndIdx), result)] })
-                    if (result === "banni(e)" && idLead !== "272097719798071298")
-                        list.at(rndIdx).kick();
+                    applyRoulette(list.at(rndIdx), message.channel);
                 })
                 .catch(console.error)
         else
@@ -133,12 +211,8 @@ async function roulette(message){
                             found = true;
                             if (value.user.bot)
                                 message.channel.send("Le destin des bots ne vous appartient pas! è_é");
-                            else{
-                                var result = getResultRandom();
-                                message.channel.send({ embeds : [getEmbedRoulette(value, result)] });
-                                if (result === "banni(e)" && idLead !== "272097719798071298")
-                                    value.kick();
-                            }
+                            else
+                                applyRoulette(value, message.channel);
                             break;
                         }
                     if (!found)
@@ -146,7 +220,91 @@ async function roulette(message){
                 })
                 .catch(console.error)
     }
+    rouletteActive = false;
 }
+
+async function jackpot(message){
+    var jackpot = await getJackpotRoulette();
+    message.channel.send(`La cagnotte est actuellement de **${jackpot}**`);
+}
+
+// OLD ROULETTE
+// async function roulette(message){
+//     if (message.author.id != idLead && !hasRole(message.member, idRoleLead)){
+//         message.guild.roles.fetch(idRoleLead)
+//             .then(role => message.channel.send(`Commande utilisable que par les membres ayant le rôle **${role.name}**`))
+//             .catch(console.error);
+//     }
+//     else {
+//         message.channel.send("5 :joy:");
+//         await new Promise(resolve => setTimeout(resolve, 1000));
+//         message.channel.send("4 :thinking:");
+//         await new Promise(resolve => setTimeout(resolve, 1000));
+//         message.channel.send("3 :eyes:");
+//         await new Promise(resolve => setTimeout(resolve, 1000)); 
+//         message.channel.send("2 :smirk:");
+//         await new Promise(resolve => setTimeout(resolve, 1000));
+//         message.channel.send("1 :gun:");
+//         await new Promise(resolve => setTimeout(resolve, 1000));
+//         var usernameTmp = message.content.split(' ')[1];
+//         if (message.mentions.roles.size >= 1){
+//             message.guild.members.list({limit : 500})
+//                 .then(list => {
+//                     rndIdx = rand(message.guild.memberCount);
+//                     while (!hasRole(list.at(rndIdx), message.mentions.roles.at(0).id))
+//                         rndIdx = rand(message.guild.memberCount);
+//                     var result = getResultRandom();
+//                     message.channel.send({ embeds : [getEmbedRoulette(list.at(rndIdx), result)] })
+//                     if (result === "banni(e)" && idLead !== "272097719798071298")
+//                         list.at(rndIdx).kick();
+//                 })
+//                 .catch(console.error)
+//         }
+//         else if (message.mentions.members.size >= 1){
+//             if (message.mentions.members.at(0).user.bot)
+//                 message.channel.send("Le destin des bots ne vous appartient pas! è_é");
+//             else{
+//                 var result = getResultRandom();
+//                 message.channel.send({ embeds : [getEmbedRoulette(message.mentions.members.at(0), result)] });
+//                 if (result === "banni(e)" && idLead !== "272097719798071298")
+//                     message.mentions.members.at(0).kick();
+//             }
+//         }
+//         else if (typeof usernameTmp === 'undefined')
+//         message.guild.members.list({limit : 500})
+//                 .then(list => {
+//                     rndIdx = rand(message.guild.memberCount);
+//                     while (list.at(rndIdx).user.bot)
+//                         rndIdx = rand(message.guild.memberCount);
+//                     var result = getResultRandom();
+//                     message.channel.send({ embeds : [getEmbedRoulette(list.at(rndIdx), result)] })
+//                     if (result === "banni(e)" && idLead !== "272097719798071298")
+//                         list.at(rndIdx).kick();
+//                 })
+//                 .catch(console.error)
+//         else
+//             message.guild.members.list({limit : 500})
+//                 .then(list => {
+//                     var found = false;
+//                     for (var [key, value] of list)
+//                         if (value.displayName.toLowerCase().startsWith(usernameTmp.toLowerCase())){
+//                             found = true;
+//                             if (value.user.bot)
+//                                 message.channel.send("Le destin des bots ne vous appartient pas! è_é");
+//                             else{
+//                                 var result = getResultRandom();
+//                                 message.channel.send({ embeds : [getEmbedRoulette(value, result)] });
+//                                 if (result === "banni(e)" && idLead !== "272097719798071298")
+//                                     value.kick();
+//                             }
+//                             break;
+//                         }
+//                     if (!found)
+//                         message.channel.send(`Personne dans le serveur n'a un pseudo commençant par **${usernameTmp}**`);
+//                 })
+//                 .catch(console.error)
+//     }
+// }
 
 function clean(message){
     if (message.author.id != idLead)
@@ -222,7 +380,7 @@ function akro(message){
 function getEmbedLuigi(member, duration){
     var embed = new EmbedBuilder();
     embed.setTitle(member.displayName);
-    embed.setDescription("Mute pendant " + msToMS(duration));
+    embed.setDescription("Mute pendant " + msToHMS(duration));
     embed.setThumbnail(member.displayAvatarURL());
     embed.addFields({ name : "Pourquoi ?", value : "Feur", inline : true });
     embed.setImage(urlImageKoala);
@@ -264,6 +422,7 @@ function gasy(message){
 
 const mapMessageCreate = {
     "roulette" : roulette,
+    "jackpot" : jackpot,
     "clean" : clean,
     "ava" : ava,
     "akro" : akro,
