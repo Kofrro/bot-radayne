@@ -191,7 +191,7 @@ function ava(message){
                     var listDM = "";
                     for (var i = 0; i < list.size; i++)
                         if(hasRole(list.at(i), message.mentions.roles.at(0).id)){
-                            listDM += ` ${list.at(i).displayName}`;
+                            listDM += `\n• ${list.at(i).displayName}`;
                             list.at(i).createDM()
                                 .then(channelDM => channelDM.send(m))
                                 .catch(console.error);
