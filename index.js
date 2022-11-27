@@ -188,11 +188,15 @@ function ava(message){
             var m = message.content.slice(idxSpace + 1);
             message.guild.members.list({limit : 500})
                 .then(list => {
+                    var listDM = "";
                     for (var i = 0; i < list.size; i++)
-                        if(hasRole(list.at(i), message.mentions.roles.at(0).id))
+                        if(hasRole(list.at(i), message.mentions.roles.at(0).id)){
+                            listDM += ` ${list.at(i).displayName}`;
                             list.at(i).createDM()
                                 .then(channelDM => channelDM.send(m))
                                 .catch(console.error);
+                        }
+                    message.channel.send(`Les personnes suivantes ont été DM:${listDM}`);
                 })
                 .catch(console.error)
         }
