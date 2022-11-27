@@ -191,12 +191,12 @@ function ava(message){
                     var listDM = "";
                     for (var i = 0; i < list.size; i++)
                         if(hasRole(list.at(i), message.mentions.roles.at(0).id)){
-                            // listDM += ` ${list.at(i).displayName}`;
+                            listDM += ` ${list.at(i).displayName}`;
                             list.at(i).createDM()
                                 .then(channelDM => channelDM.send(m))
                                 .catch(console.error);
                         }
-                    // message.channel.send(`Les personnes suivantes ont été DM:${listDM}`);
+                    message.channel.send(`Les personnes suivantes ont été DM:${listDM}`);
                 })
                 .catch(console.error)
         }
