@@ -23,9 +23,7 @@ client.on("ready", () => {
 
 const urlImageKoala = "https://static.euronews.com/articles/stories/06/46/57/16/1000x563_cmsv2_c285593a-edbf-5f1c-a7c3-bd082d34c186-6465716.jpg";
 
-var rndCount = 0;
 function rand(max){
-    rndCount++;
     return Math.floor(Math.random() * max);
 }
 
@@ -183,14 +181,20 @@ async function roulette(message){
         if (message.mentions.roles.size >= 1){
             message.guild.members.list({limit : 500})
                 .then(list => {
-                    rndCount = 0;
-                    rndIdx = rand(message.guild.memberCount);
-                    while ((!hasRole(list.at(rndIdx), message.mentions.roles.at(0).id) || list.at(rndIdx).user.bot) && rndCount < 10)
+                    isAvailable = false;
+                    for (var [key, value] of list)
+                        if (hasRole(value, message.mentions.roles.at(0).id) && !value.user.bot){
+                            isAvailable = true;
+                            break;
+                        }
+                    if (!isAvailable)
+                        message.channel.send("Vous ne pouvez pas cibler un rôle ne contenant que des bots! è_é");
+                    else{
                         rndIdx = rand(message.guild.memberCount);
-                    if (rndCount == 10)
-                        message.channel.send("Aucune cible valable trouvée");
-                    else
+                        while (!hasRole(list.at(rndIdx), message.mentions.roles.at(0).id) || list.at(rndIdx).user.bot)
+                            rndIdx = rand(message.guild.memberCount);
                         applyRoulette(list.at(rndIdx), message.channel);
+                    }
                 })
                 .catch(console.error)
         }
@@ -205,14 +209,10 @@ async function roulette(message){
         else if (typeof usernameTmp === 'undefined')
             message.guild.members.list({limit : 500})
                 .then(list => {
-                    rndCount = 0;
                     rndIdx = rand(message.guild.memberCount);
-                    while (list.at(rndIdx).user.bot && rndCount < 10)
+                    while (list.at(rndIdx).user.bot)
                         rndIdx = rand(message.guild.memberCount);
-                    if (rndCount == 10)
-                        message.channel.send("Aucune cible valable trouvée");
-                    else
-                        applyRoulette(list.at(rndIdx), message.channel);
+                    applyRoulette(list.at(rndIdx), message.channel);
                 })
                 .catch(console.error)
         // By name
