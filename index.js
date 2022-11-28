@@ -55,6 +55,20 @@ function msToHMS(milliseconds) {
 
 // COMMANDS
 
+async function regles(message){
+    message.channel.send(`Trop long, palu donc je lance une roulette sur <@${message.author.id}> ^^`);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    await countdownRoulette(message.channel);
+    var regles = "\nLa roulette consiste en une sentence aléatoire sur une personne choisie aléatoirement.";
+    regles += "\n\nIl y a 4 résultats possibles:";
+    regles += "\n\n• **Timeout** -> La cible est timeout pendant une durée allant de 5 minutes a 5 heures.";
+    regles += "\n• **perte de kamas** -> La cible doit donner entre 100 000 et 500 000 kamas pour la cagnotte.";
+    regles += "\n• **sauvé(e)** -> La cible est sauvée, il ne se passe rien.";
+    regles += "\n• **gain de kamas** -> La cible gagne entre 100 000 et 500 000 kamas depuis la cagnotte.";
+    regles += "\n\nDernière chose: la cagnotte n'est utilisable qu'une fois par jour par personne (WIP).";
+    message.channel.send(`Nan j'déconne, voici les règles:\n${regles}`);
+}
+
 function getResultRouletteRandom(){
     const resultProba = new Map();
     resultProba.set("timeout", 5);
@@ -357,6 +371,7 @@ function gasy(message){
 // messageCreate Event
 
 const mapMessageCreate = {
+    "regles" : regles,
     "roulette" : roulette,
     "jackpot" : jackpot,
     "clean" : clean,
