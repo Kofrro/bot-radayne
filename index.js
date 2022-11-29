@@ -4,7 +4,7 @@ const fs = require("fs/promises");
 
 const { prefix, token, idLead, idRoleLead } = require("./config.json")
 
-const { Client, GatewayIntentBits, EmbedBuilder, GuildMemberRoleManager, DMChannel } = require('discord.js');
+const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
 
 const client = new Client({
     intents: [
@@ -65,7 +65,7 @@ async function regles(message){
     regles += "\n• **perte de kamas** -> La cible doit donner entre 100 000 et 500 000 kamas pour la cagnotte.";
     regles += "\n• **sauvé(e)** -> La cible est sauvée, il ne se passe rien.";
     regles += "\n• **gain de kamas** -> La cible gagne entre 100 000 et 500 000 kamas depuis la cagnotte.";
-    regles += "\n\nDernière chose: la cagnotte n'est utilisable qu'une fois par jour par personne (WIP).";
+    regles += "\n\nDernière chose: la cagnotte n'est utilisable qu'une fois par jour par personne.";
     message.channel.send(`Nan j'déconne, voici les règles:\n${regles}`);
 }
 
@@ -109,9 +109,15 @@ async function getJackpotRoulette(){
     return -1;
 }
 
-function canUseRoulette(id){
-
-    if (id == idLead) return true;
+async function canUseRoulette(id){
+    if (id == idLead)
+        return true;
+    var uses = new Map(Object.entries(JSON.parse(await fs.readFile("useRoulette.json"))));
+    var now = Date.now();
+    if (uses.has(id) && now - uses.get(id) < 24 * 60 * 60 * 1000)
+        return false;
+    uses.set(id, now);
+    await fs.writeFile("useRoulette.json", JSON.stringify(Object.fromEntries(uses)));
     return true;
 }
 
@@ -186,7 +192,7 @@ async function roulette(message){
             .then(role => message.channel.send(`Commande utilisable que par les membres ayant le rôle **${role.name}**`))
             .catch(console.error);
     }
-    else if (!canUseRoulette(message.author.id))
+    else if (!await canUseRoulette(message.author.id))
             message.channel.send("Tu as déjà utilisé la roulette ces dernières 24h");
     else {
         await countdownRoulette(message.channel);
