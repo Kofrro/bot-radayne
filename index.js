@@ -126,10 +126,10 @@ async function getValueRoulette(member, result){
     var value = 0;
     if (result === "timeout" && idLead !== "272097719798071298"){
         value = 5 * 60 * 1000 + rand(5 * 59 * 60 * 1000);
-        if (killModeB)
-            member.kick();
-        else
+        if (modeRoulette === 0)
             member.timeout(value);
+        else
+            member.kick();
     }
     else if (result === "perte de kamas"){
         value = -100000 * (rand(4) + 1);
@@ -191,7 +191,7 @@ async function roulette(message){
     }
     rouletteActive = true;
     rouletteUser = message.member.displayName;
-    if (message.author.id != idLead && !hasRole(message.member, idRoleLead)){
+    if (message.author.id != idLead && idLead === "272097719798071298" && !hasRole(message.member, idRoleLead)){
         message.guild.roles.fetch(idRoleLead)
             .then(role => message.channel.send(`Commande utilisable que par les membres ayant le rôle **${role.name}**`))
             .catch(console.error);
@@ -266,10 +266,37 @@ async function jackpot(message){
     message.channel.send(`La cagnotte est actuellement de **${jackpot}**`);
 }
 
-var killModeB = false;
-function killMode(message){
-    killModeB = !killModeB;
-    message.channel.send(`Kill mode ${killModeB ? "activé" : "desactivé"}.`);
+var modeRoulette = 0;
+function changeModeRoulette(message){
+    if (message.author.id != idLead)
+        message.guild.members.fetch(idLead)
+            .then(member => message.channel.send(`Commande utilisable que par **${member.displayName}**`))
+            .catch(console.error);
+    else{
+        var nbMode = parseInt(message.content.split(' ')[1]);
+        if (!isNaN(nb) && (nbMode == 0 || nbMode == 1)){
+            modeRoulette = nbMode;
+            if (nbMode == 0)
+                message.channel.send("La roulette va maintenant timeout")
+            else
+                message.channel.send("La roulette va maintenant kick")
+        }
+    }
+}
+
+function killMember(message){
+    if (message.author.id != idLead)
+        message.guild.members.fetch(idLead)
+            .then(member => message.channel.send(`Commande utilisable que par **${member.displayName}**`))
+            .catch(console.error);
+    else if (message.mentions.members.size >= 1){
+        if (message.mentions.members.at(0).user.bot)
+            message.channel.send("Le destin des bots ne vous appartient pas! è_é");
+        else if (idLead !== "272097719798071298"){
+            message.channel.send(`${message.mentions.members.at(0).displayName} a été kick`);
+            message.mentions.members.at(0).kick();
+        }
+    }
 }
 
 function clean(message){
@@ -390,7 +417,8 @@ const mapMessageCreate = {
     "regles" : regles,
     "roulette" : roulette,
     "jackpot" : jackpot,
-    "kill" : killMode,
+    "mode" : changeModeRoulette,
+    "kill" : killMember,
     "clean" : clean,
     "ava" : ava,
     "akro" : akro,
