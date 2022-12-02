@@ -274,7 +274,7 @@ function changeModeRoulette(message){
             .catch(console.error);
     else{
         var nbMode = parseInt(message.content.split(' ')[1]);
-        if (!isNaN(nb) && (nbMode == 0 || nbMode == 1)){
+        if (!isNaN(nbMode) && (nbMode == 0 || nbMode == 1)){
             modeRoulette = nbMode;
             if (nbMode == 0)
                 message.channel.send("La roulette va maintenant timeout")
