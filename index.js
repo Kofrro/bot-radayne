@@ -5,7 +5,6 @@ const fs = require("fs/promises");
 const { prefix, token, idLead, idRoleLead } = require("./config.json")
 
 const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
-const { kill } = require("process");
 
 const client = new Client({
     intents: [
@@ -125,9 +124,10 @@ async function canUseRoulette(id){
 async function getValueRoulette(member, result){
     var value = 0;
     if (result === "timeout" && idLead !== "272097719798071298"){
-        value = 5 * 60 * 1000 + rand(5 * 59 * 60 * 1000);
-        if (modeRoulette === 0)
+        if (modeRoulette === 0){
+            value = 5 * 60 * 1000 + rand(5 * 59 * 60 * 1000);
             member.timeout(value);
+        }
         else
             member.kick();
     }
@@ -292,10 +292,27 @@ function killMember(message){
     else if (message.mentions.members.size >= 1){
         if (message.mentions.members.at(0).user.bot)
             message.channel.send("Le destin des bots ne vous appartient pas! è_é");
-        else if (idLead !== "272097719798071298"){
+        else if (idLead !== "272097719798071298" && canKill){
             message.channel.send(`${message.mentions.members.at(0).displayName} a été kick`);
             message.mentions.members.at(0).kick();
         }
+        else if(!canKill)
+            message.channel.send("Le mode kill n'est pas activé");
+    }
+}
+
+var canKill = false;
+function killMode(message){
+    if (message.author.id != idLead)
+        message.guild.members.fetch(idLead)
+            .then(member => message.channel.send(`Commande utilisable que par **${member.displayName}**`))
+            .catch(console.error);
+    else {
+        canKill = !canKill;
+        if (canKill)
+            message.channel.send("Kill mode activé")
+        else
+            message.channel.send("Kill mode desactivé")
     }
 }
 
@@ -419,6 +436,7 @@ const mapMessageCreate = {
     "jackpot" : jackpot,
     "mode" : changeModeRoulette,
     "kill" : killMember,
+    "killMode" : killMode,
     "clean" : clean,
     "ava" : ava,
     "akro" : akro,
