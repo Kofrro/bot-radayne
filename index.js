@@ -5,6 +5,7 @@ const fs = require("fs/promises");
 const { prefix, token, idLead, idRoleLead } = require("./config.json")
 
 const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
+const { kill } = require("process");
 
 const client = new Client({
     intents: [
@@ -125,7 +126,10 @@ async function getValueRoulette(member, result){
     var value = 0;
     if (result === "timeout" && idLead !== "272097719798071298"){
         value = 5 * 60 * 1000 + rand(5 * 59 * 60 * 1000);
-        member.timeout(value);
+        if (killMode)
+            member.kick();
+        else
+            member.timeout(value);
     }
     else if (result === "perte de kamas"){
         value = -100000 * (rand(4) + 1);
@@ -262,6 +266,12 @@ async function jackpot(message){
     message.channel.send(`La cagnotte est actuellement de **${jackpot}**`);
 }
 
+var killMode = false;
+function kill(message){
+    killMode = !killMode;
+    message.channel.send(`Kill mode ${killMode ? "activé" : "desactivé"}.`);
+}
+
 function clean(message){
     if (message.author.id != idLead)
         message.guild.members.fetch(idLead)
@@ -380,6 +390,7 @@ const mapMessageCreate = {
     "regles" : regles,
     "roulette" : roulette,
     "jackpot" : jackpot,
+    "kill" : kill,
     "clean" : clean,
     "ava" : ava,
     "akro" : akro,
