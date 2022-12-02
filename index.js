@@ -126,7 +126,7 @@ async function getValueRoulette(member, result){
     var value = 0;
     if (result === "timeout" && idLead !== "272097719798071298"){
         value = 5 * 60 * 1000 + rand(5 * 59 * 60 * 1000);
-        if (killMode)
+        if (killModeB)
             member.kick();
         else
             member.timeout(value);
@@ -266,10 +266,10 @@ async function jackpot(message){
     message.channel.send(`La cagnotte est actuellement de **${jackpot}**`);
 }
 
-var killMode = false;
-function kill(message){
-    killMode = !killMode;
-    message.channel.send(`Kill mode ${killMode ? "activé" : "desactivé"}.`);
+var killModeB = false;
+function killMode(message){
+    killModeB = !killModeB;
+    message.channel.send(`Kill mode ${killModeB ? "activé" : "desactivé"}.`);
 }
 
 function clean(message){
@@ -390,7 +390,7 @@ const mapMessageCreate = {
     "regles" : regles,
     "roulette" : roulette,
     "jackpot" : jackpot,
-    "kill" : kill,
+    "kill" : killMode,
     "clean" : clean,
     "ava" : ava,
     "akro" : akro,
