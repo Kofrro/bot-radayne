@@ -2,7 +2,7 @@
 
 const fs = require("fs/promises");
 
-const { prefix, token, idLead, idRoleLead } = require("./config.json")
+const { prefix, token, idLead, idRoleLead, idChannelLog } = require("./config.json")
 
 const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
 
@@ -60,8 +60,8 @@ async function regles(message){
     await new Promise(resolve => setTimeout(resolve, 1000));
     await countdownRoulette(message.channel);
     var regles = "\nLa roulette consiste en une sentence aléatoire sur une personne choisie aléatoirement.";
-    regles += "\n\nIl y a 4 résultats possibles:";
-    regles += "\n\n• **Timeout** -> La cible est timeout pendant une durée allant de 5 minutes a 5 heures.";
+    regles += "\n\nIl y a 4 résultats possibles:\n";
+    regles += "\n• **Timeout** -> La cible est timeout pendant une durée allant de 5 minutes a 5 heures.";
     regles += "\n• **perte de kamas** -> La cible doit donner entre 100 000 et 500 000 kamas pour la cagnotte.";
     regles += "\n• **sauvé(e)** -> La cible est sauvée, il ne se passe rien.";
     regles += "\n• **gain de kamas** -> La cible gagne entre 100 000 et 500 000 kamas depuis la cagnotte.";
@@ -123,7 +123,7 @@ async function canUseRoulette(id){
 
 async function getValueRoulette(member, result){
     var value = 0;
-    if (result === "timeout" && idLead !== "272097719798071298"){
+    if (result === "timeout"){
         if (modeRoulette === 0){
             value = 5 * 60 * 1000 + rand(5 * 59 * 60 * 1000);
             member.timeout(value);
@@ -176,10 +176,20 @@ async function countdownRoulette(channel){
 function applyRoulette(member, channel){
     var result = getResultRouletteRandom();
     getValueRoulette(member, result)
-        .then(val => getEmbedRoulette(member, result, val)
-            .then(embed => channel.send({ embeds : [embed] }))
-            .catch(console.error))
+        .then(val => {
+            writeLogRoulette(channel.guild, member, result, val);
+            getEmbedRoulette(member, result, val)
+                .then(embed => channel.send({ embeds : [embed] }))
+                .catch(console.error)
+        })
         .catch(console.error);
+}
+
+function writeLogRoulette(guild, member, result, val){
+    if (result == "gain de kamas" || result == "perte de kamas")
+        guild.channels.fetch(idChannelLog)
+            .then(channel => channel.send(`<@!${member.id}> -> ${result}: **${val}**`))
+            .catch(console.error);
 }
 
 var rouletteActive = false;
@@ -191,13 +201,13 @@ async function roulette(message){
     }
     rouletteActive = true;
     rouletteUser = message.member.displayName;
-    if (message.author.id != idLead && idLead === "272097719798071298" && !hasRole(message.member, idRoleLead)){
+    if (!hasRole(message.member, idRoleLead)){
         message.guild.roles.fetch(idRoleLead)
             .then(role => message.channel.send(`Commande utilisable que par les membres ayant le rôle **${role.name}**`))
             .catch(console.error);
     }
     else if (!await canUseRoulette(message.author.id))
-            message.channel.send("Tu as déjà utilisé la roulette ces dernières 24h");
+        message.channel.send("Tu as déjà utilisé la roulette ces dernières 24h");
     else {
         await countdownRoulette(message.channel);
         var usernameTmp = message.content.split(' ')[1];
@@ -272,15 +282,13 @@ function changeModeRoulette(message){
         message.guild.members.fetch(idLead)
             .then(member => message.channel.send(`Commande utilisable que par **${member.displayName}**`))
             .catch(console.error);
+    else if (modeRoulette === 0){
+        modeRoulette = 1;
+        message.channel.send("La roulette va maintenant kick")
+    }
     else{
-        var nbMode = parseInt(message.content.split(' ')[1]);
-        if (!isNaN(nbMode) && (nbMode == 0 || nbMode == 1)){
-            modeRoulette = nbMode;
-            if (nbMode == 0)
-                message.channel.send("La roulette va maintenant timeout")
-            else
-                message.channel.send("La roulette va maintenant kick")
-        }
+        modeRoulette = 0;
+        message.channel.send("La roulette va maintenant timeout")
     }
 }
 
@@ -292,11 +300,11 @@ function killMember(message){
     else if (message.mentions.members.size >= 1){
         if (message.mentions.members.at(0).user.bot)
             message.channel.send("Le destin des bots ne vous appartient pas! è_é");
-        else if (idLead !== "272097719798071298" && canKill){
+        else if (canKill){
             message.channel.send(`${message.mentions.members.at(0).displayName} a été kick`);
             message.mentions.members.at(0).kick();
         }
-        else if(!canKill)
+        else
             message.channel.send("Le mode kill n'est pas activé");
     }
 }
@@ -431,21 +439,21 @@ function gasy(message){
 // messageCreate Event
 
 const mapMessageCreate = {
-    "regles" : regles,
-    "roulette" : roulette,
-    "jackpot" : jackpot,
-    "mode" : changeModeRoulette,
-    "kill" : killMember,
-    "killMode" : killMode,
-    "clean" : clean,
-    "ava" : ava,
-    "akro" : akro,
-    "ftgluigi" : luigi,
-    "master" : master,
-    "viking" : viking,
-    "ox" : ox,
-    "ezpk" : ezpk,
-    "gasy" : gasy
+    "regles"        : regles,
+    "roulette"      : roulette,
+    "jackpot"       : jackpot,
+    "modeRoulette"  : changeModeRoulette,
+    "kill"          : killMember,
+    "killMode"      : killMode,
+    "clean"         : clean,
+    "ava"           : ava,
+    "akro"          : akro,
+    "ftgluigi"      : luigi,
+    "master"        : master,
+    "viking"        : viking,
+    "ox"            : ox,
+    "ezpk"          : ezpk,
+    "gasy"          : gasy
 }
 
 client.on("messageCreate", message => {
