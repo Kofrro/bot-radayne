@@ -61,11 +61,11 @@ async function regles(message){
     await countdownRoulette(message.channel);
     var regles = "\nLa roulette consiste en une sentence aléatoire sur une personne choisie aléatoirement.";
     regles += "\n\nIl y a 4 résultats possibles:\n";
-    regles += "\n• **Timeout** -> La cible est timeout pendant une durée allant de 5 minutes a 5 heures.";
+    regles += "\n• **Timeout** -> La cible est timeout pendant une durée allant de 5 minutes à 1 heure.";
     regles += "\n• **perte de kamas** -> La cible doit donner entre 100 000 et 500 000 kamas pour la cagnotte.";
     regles += "\n• **sauvé(e)** -> La cible est sauvée, il ne se passe rien.";
     regles += "\n• **gain de kamas** -> La cible gagne entre 100 000 et 500 000 kamas depuis la cagnotte.";
-    regles += "\n\nDernière chose: la cagnotte n'est utilisable qu'une fois par heure par personne.";
+    regles += "\n\nDernière chose: la cagnotte n'est utilisable qu'une fois par jour par personne.";
     message.channel.send(`Nan j'déconne, voici les règles:\n${regles}`);
 }
 
@@ -114,7 +114,7 @@ async function canUseRoulette(id){
         return true;
     var uses = new Map(Object.entries(JSON.parse(await fs.readFile("useRoulette.json"))));
     var now = Date.now();
-    var nbHours = 1;
+    var nbHours = 24;
     if (uses.has(id) && now - uses.get(id) < nbHours * 60 * 60 * 1000)
         return false;
     uses.set(id, now);
@@ -126,7 +126,7 @@ async function getValueRoulette(member, result){
     var value = 0;
     if (result === "timeout"){
         if (modeRoulette === 0){
-            value = 5 * 60 * 1000 + rand(5 * 59 * 60 * 1000);
+            value = 5 * 60 * 1000 + rand(55 * 60 * 1000);
             member.timeout(value);
         }
         else
@@ -208,7 +208,7 @@ async function roulette(message){
             .catch(console.error);
     }
     else if (!await canUseRoulette(message.author.id))
-        message.channel.send("Tu as déjà utilisé la roulette cette dernière heure");
+        message.channel.send("Tu as déjà utilisé la roulette ces dernières 24 heures");
     else {
         await countdownRoulette(message.channel);
         var usernameTmp = message.content.split(' ')[1];
