@@ -2,7 +2,12 @@
 
 const fs = require("fs/promises");
 
-const { prefix, token, idLead, idRoleLead, idChannelLog } = require("./config.json")
+const { token } = require("./config.json")
+
+const prefix = "!";
+const idLead = "756586259220136018"; // akro
+const idRoleRoulette = "756956524458410024"; // octa+
+const idChannelLog = "1056681830893498379"; // maitre-executor-trace
 
 const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
 
@@ -202,11 +207,10 @@ async function roulette(message){
     }
     rouletteActive = true;
     rouletteUser = message.member.displayName;
-    if (!hasRole(message.member, idRoleLead)){
-        message.guild.roles.fetch(idRoleLead)
+    if (!hasRole(message.member, idRoleRoulette))
+        message.guild.roles.fetch(idRoleRoulette)
             .then(role => message.channel.send(`Commande utilisable que par les membres ayant le rôle **${role.name}**`))
             .catch(console.error);
-    }
     else if (!await canUseRoulette(message.author.id))
         message.channel.send("Tu as déjà utilisé la roulette ces dernières 24 heures");
     else {
@@ -218,15 +222,15 @@ async function roulette(message){
                 .then(list => {
                     isAvailable = false;
                     for (var [key, value] of list)
-                        if (hasRole(value, message.mentions.roles.at(0).id) && !value.user.bot){
+                        if (hasRole(value, message.mentions.roles.at(0).id) && hasRole(value, idRoleRoulette)){
                             isAvailable = true;
                             break;
                         }
                     if (!isAvailable)
-                        message.channel.send("Vous ne pouvez pas cibler un rôle ne contenant que des bots! è_é");
+                        message.channel.send("Il n'y a pas de cible potentielle dans le role visé.");
                     else{
                         rndIdx = rand(message.guild.memberCount);
-                        while (!hasRole(list.at(rndIdx), message.mentions.roles.at(0).id) || list.at(rndIdx).user.bot)
+                        while (!hasRole(list.at(rndIdx), message.mentions.roles.at(0).id) || !hasRole(list.at(rndIdx), idRoleRoulette))
                             rndIdx = rand(message.guild.memberCount);
                         applyRoulette(list.at(rndIdx), message.channel);
                     }
@@ -235,8 +239,10 @@ async function roulette(message){
         }
         // By mention
         else if (message.mentions.members.size >= 1){
-            if (message.mentions.members.at(0).user.bot)
-                message.channel.send("Le destin des bots ne vous appartient pas! è_é");
+            if (!hasRole(message.mentions.members.at(0), idRoleRoulette))
+                message.guild.roles.fetch(idRoleRoulette)
+                    .then(role => message.channel.send(`Commande utilisable que sur les membres ayant le rôle **${role.name}**`))
+                    .catch(console.error);
             else
                 applyRoulette(message.mentions.members.at(0), message.channel);
         }
@@ -245,7 +251,7 @@ async function roulette(message){
             message.guild.members.list({limit : 500})
                 .then(list => {
                     rndIdx = rand(message.guild.memberCount);
-                    while (list.at(rndIdx).user.bot)
+                    while (!hasRole(list.at(rndIdx), idRoleRoulette))
                         rndIdx = rand(message.guild.memberCount);
                     applyRoulette(list.at(rndIdx), message.channel);
                 })
@@ -258,8 +264,10 @@ async function roulette(message){
                     for (var [key, value] of list)
                         if (value.displayName.toLowerCase().startsWith(usernameTmp.toLowerCase())){
                             found = true;
-                            if (value.user.bot)
-                                message.channel.send("Le destin des bots ne vous appartient pas! è_é");
+                            if (!hasRole(value, idRoleRoulette))
+                                message.guild.roles.fetch(idRoleRoulette)
+                                    .then(role => message.channel.send(`Commande utilisable que sur les membres ayant le rôle **${role.name}**`))
+                                    .catch(console.error);
                             else
                                 applyRoulette(value, message.channel);
                             break;
@@ -391,7 +399,8 @@ function akro(message){
         "On peut pas perdre avec mon niveau actuel",
         "Tali il est toujours pas mort ton lapin?",
         "Corta j'crois que t’as pas compris, tout ce qui est à toi est à moi et tout ce qui est à moi est à moi",
-        "Cette guilde me sabote"
+        "Cette guilde me sabote",
+        ":smirk:"
     ];
     message.channel.send(sentences[rand(sentences.length)]);
 }
@@ -443,9 +452,9 @@ const mapMessageCreate = {
     "regles"        : regles,
     "roulette"      : roulette,
     "jackpot"       : jackpot,
-    "modeRoulette"  : changeModeRoulette,
+    "moderoulette"  : changeModeRoulette,
     "kill"          : killMember,
-    "killMode"      : killMode,
+    "killmode"      : killMode,
     "clean"         : clean,
     "ava"           : ava,
     "akro"          : akro,
@@ -459,7 +468,7 @@ const mapMessageCreate = {
 
 client.on("messageCreate", message => {
     if (message.content.startsWith(`${prefix}`))
-        try { mapMessageCreate[message.content.slice(1).split(' ')[0]](message); }
+        try { mapMessageCreate[message.content.slice(1).split(' ')[0].toLowerCase()](message); }
         catch (e){ console.error(e); }
 })
 
