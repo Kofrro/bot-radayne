@@ -114,14 +114,16 @@ async function getJackpotRoulette(){
     return -1;
 }
 
-async function canUseRoulette(id){
+async function canUseRoulette(id, message){
     if (id == idLead)
         return true;
     var uses = new Map(Object.entries(JSON.parse(await fs.readFile("useRoulette.json"))));
     var now = Date.now();
     var nbHours = 24;
-    if (uses.has(id) && now - uses.get(id) < nbHours * 60 * 60 * 1000)
+    if (uses.has(id) && now - uses.get(id) < nbHours * 60 * 60 * 1000){
+        message.channel.send(`Tu as déjà utilisé la roulette ces dernières 24 heures.\nProchaine utilisation possible dans ${msToHMS(uses.get(id) + nbHours * 60 * 60 * 1000 - now)}.`);
         return false;
+    }
     uses.set(id, now);
     await fs.writeFile("useRoulette.json", JSON.stringify(Object.fromEntries(uses)));
     return true;
@@ -221,9 +223,7 @@ async function roulette(message){
         message.guild.roles.fetch(idRoleRoulette)
             .then(role => message.channel.send(`Commande utilisable que par les membres ayant le rôle **${role.name}**`))
             .catch(console.error);
-    else if (!await canUseRoulette(message.author.id))
-        message.channel.send("Tu as déjà utilisé la roulette ces dernières 24 heures");
-    else {
+    else if (await canUseRoulette(message.author.id, message)){
         await countdownRoulette(message.channel);
         var usernameTmp = message.content.split(' ')[1];
         // Rnd by role
