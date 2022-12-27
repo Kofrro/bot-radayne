@@ -132,10 +132,20 @@ async function getValueRoulette(member, result){
     if (result === "timeout"){
         if (modeRoulette === 0){
             value = 5 * 60 * 1000 + rand(55 * 60 * 1000);
-            member.timeout(value);
+            try{
+                member.timeout(value);
+            }
+            catch(e){
+                console.error(e);
+            }
         }
         else
-            member.kick();
+            try{
+                member.kick();
+            }
+            catch(e){
+                console.error(e);
+            }
     }
     else if (result === "perte de kamas"){
         value = -100000 * (rand(4) + 1);
