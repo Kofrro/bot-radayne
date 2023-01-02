@@ -134,20 +134,10 @@ async function getValueRoulette(member, result){
     if (result === "timeout"){
         if (modeRoulette === 0){
             value = 5 * 60 * 1000 + rand(55 * 60 * 1000);
-            try{
-                member.timeout(value);
-            }
-            catch(e){
-                console.error(e);
-            }
+            member.timeout(value).catch(console.error);
         }
         else
-            try{
-                member.kick();
-            }
-            catch(e){
-                console.error(e);
-            }
+            member.kick().catch(console.error);
     }
     else if (result === "perte de kamas"){
         value = -100000 * (rand(4) + 1);
@@ -430,7 +420,7 @@ function luigi(message){
     var rndDuration = rand(9 * 60 * 1000) + 60 * 1000;
     message.guild.members.fetch("220639936053772288")
         .then(member => {
-            member.timeout(rndDuration);
+            member.timeout(rndDuration).catch(console.error);
             message.channel.send({ embeds : [getEmbedLuigi(member, rndDuration)] });
         })
         .catch(console.error);
@@ -473,14 +463,22 @@ const mapMessageCreate = {
     "viking"        : viking,
     "ox"            : ox,
     "ezpk"          : ezpk,
-    "gasy"          : gasy
+    "gasy"          : gasy,
+    "test"          : test
 }
 
 client.on("messageCreate", message => {
-    if (message.content.startsWith(`${prefix}`))
-        try { mapMessageCreate[message.content.slice(1).split(' ')[0].toLowerCase()](message); }
-        catch (e){ console.error(e); }
+    if (message.content.startsWith(`${prefix}`)){
+        var nameFunction = message.content.slice(1).split(' ')[0].toLowerCase();
+        if (mapMessageCreate.hasOwnProperty(nameFunction))
+            mapMessageCreate[nameFunction](message);
+    }
 })
+
+function test(message){
+    if (message.author.id != "272097719798071298")
+        return;
+}
 
 // LOGIN
 
