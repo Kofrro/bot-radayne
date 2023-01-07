@@ -45,9 +45,9 @@ function padTo2Digits(num) {
 }
 
 function msToHMS(milliseconds) {
-    let seconds = Math.floor(milliseconds / 1000);
-    let minutes = Math.floor(seconds / 60);
-    let hours = Math.floor(minutes / 60);
+    var seconds = Math.floor(milliseconds / 1000);
+    var minutes = Math.floor(seconds / 60);
+    var hours = Math.floor(minutes / 60);
     seconds = seconds % 60;
     minutes = minutes % 60;
     var res = "";
@@ -56,6 +56,11 @@ function msToHMS(milliseconds) {
     if (minutes > 0)
         res += `${padTo2Digits(minutes)}m`;
     return res + `${padTo2Digits(seconds)}s`;
+}
+
+function getMSSinceMidnight(t){
+    var d = new Date(t);
+    return d.getHours() * 3600000 + d.getMinutes() * 60000 + d.getSeconds() * 1000 + d.getMilliseconds();
 }
 
 // COMMANDS
@@ -119,9 +124,8 @@ async function canUseRoulette(id, message){
         return true;
     var uses = new Map(Object.entries(JSON.parse(await fs.readFile("useRoulette.json"))));
     var now = Date.now();
-    var nbHours = 24;
-    if (uses.has(id) && now - uses.get(id) < nbHours * 60 * 60 * 1000){
-        message.channel.send(`Tu as déjà utilisé la roulette ces dernières 24 heures.\nProchaine utilisation possible dans ${msToHMS(uses.get(id) + nbHours * 60 * 60 * 1000 - now)}.`);
+    if (uses.has(id) && now - uses.get(id) < getMSSinceMidnight(now)){
+        message.channel.send("Tu as déjà utilisé la roulette aujourd'hui.");
         return false;
     }
     uses.set(id, now);
@@ -446,6 +450,10 @@ function gasy(message){
     message.channel.send("<@!339377927185498114> C’est vrai ton père c’est Gazo ?");
 }
 
+function koffro(message){
+    message.channel.send("Kofrro ça s'écrit avec un f et deux r, merci.");
+}
+
 // messageCreate Event
 
 const mapMessageCreate = {
@@ -464,6 +472,7 @@ const mapMessageCreate = {
     "ox"            : ox,
     "ezpk"          : ezpk,
     "gasy"          : gasy,
+    "koffro"        : koffro,
     "test"          : test
 }
 
