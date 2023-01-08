@@ -10,6 +10,7 @@ const idKofrro = "272097719798071298";
 const idViking = "293095687183400970";
 const idRoleRoulette = "756956524458410024"; // octa+
 const idChannelLog = "1056681830893498379"; // maitre-executor-trace
+const urlImageKoala = "https://static.euronews.com/articles/stories/06/46/57/16/1000x563_cmsv2_c285593a-edbf-5f1c-a7c3-bd082d34c186-6465716.jpg";
 
 const client = new Client({
     intents: [
@@ -25,8 +26,6 @@ client.on("ready", () => {
 });
 
 // Utils
-
-const urlImageKoala = "https://static.euronews.com/articles/stories/06/46/57/16/1000x563_cmsv2_c285593a-edbf-5f1c-a7c3-bd082d34c186-6465716.jpg";
 
 function rand(max){
     return Math.floor(Math.random() * max);
