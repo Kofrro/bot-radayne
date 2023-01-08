@@ -163,8 +163,8 @@ async function getValueRoulette(member, result){
 async function getEmbedRoulette(member, result, value){
     var embed = new EmbedBuilder();
     embed.setTitle(member.displayName);
-    embed.setDescription("Sentence -> **" + result + "**");
-    if (result ===  "timeout")
+    embed.setDescription(`Sentence -> **${result ===  "timeout" && modeRoulette === 1 ? "kick" : result}**`);
+    if (result ===  "timeout" && modeRoulette === 0)
         embed.addFields({ name : "Durée", value : msToHMS(value), inline : true });
     else if (result === "perte de kamas")
         embed.addFields({ name : "Nombre de kamas", value : `${value}`, inline : true });
@@ -192,7 +192,7 @@ async function countdownRoulette(channel){
 }
 
 function applyRoulette(member, channel){
-    var result = member.id == idRadayne ? "sauvé(e)" : getResultRouletteRandom();
+    var result = member.id === idRadayne ? "sauvé(e)" : getResultRouletteRandom();
     getValueRoulette(member, result)
         .then(val => {
             writeLogRoulette(channel.guild, member, result, val);
