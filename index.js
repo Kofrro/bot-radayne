@@ -186,13 +186,13 @@ async function countdownRoulette(channel){
 }
 
 function applyRoulette(member, channel){
-    var result = getResultRouletteRandom();
+    var result = member.id == idLead ? "sauvé(e)" : getResultRouletteRandom();
     getValueRoulette(member, result)
         .then(val => {
             writeLogRoulette(channel.guild, member, result, val);
             getEmbedRoulette(member, result, val)
                 .then(embed => channel.send({ embeds : [embed] }))
-                .catch(console.error)
+                .catch(console.error);
         })
         .catch(console.error);
 }
@@ -454,6 +454,19 @@ function koffro(message){
     message.channel.send("Kofrro ça s'écrit avec un f et deux r, merci.");
 }
 
+function razzia(message){
+    if (message.author.id != "293095687183400970")
+        message.guild.members.fetch("293095687183400970")
+            .then(member => message.channel.send(`Commande utilisable que par **${member.displayName}**`))
+            .catch(console.error);
+    else if (message.mentions.members.size == 0)
+        message.channel.send("Il faut mentionner un membre du discord")
+    else{
+        var targetId = message.mentions.members.at(0).id;
+        message.channel.send(`<@!${targetId}> razzia ALLO FDP PK T EZ GROS BOOUFFONN <@!${targetId}> razzia ALLO FDP PK T EZ GROS BOOUFFONN <@!${targetId}> razzia ALLO FDP PK T EZ GROS BOOUFFONN <@!${targetId}> razzia ALLO FDP PK T EZ GROS BOOUFFONN <@!${targetId}> razzia ALLO FDP PK T EZ GROS BOOUFFONN <@!${targetId}> razzia ALLO FDP PK T EZ GROS BOOUFFONN`);
+    }
+}
+
 // messageCreate Event
 
 const mapMessageCreate = {
@@ -473,6 +486,7 @@ const mapMessageCreate = {
     "ezpk"          : ezpk,
     "gasy"          : gasy,
     "koffro"        : koffro,
+    "razzia"        : razzia,
     "test"          : test
 }
 
