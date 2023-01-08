@@ -67,7 +67,7 @@ function getMSSinceMidnight(t){
 async function regles(message){
     message.guild.roles.fetch(idRoleRoulette)
             .then(role => {
-                var regles = "La roulette permet d'appliquer une sentence aléatoirement sur un membre du serveur.";
+                var regles = "La roulette permet d'appliquer une sentence aléatoire sur un membre du serveur.";
                 regles += "\n\nIl y a 4 résultats possibles:";
                 regles += "\n• **timeout** -> La cible est timeout pendant une durée allant de 5 minutes à 1 heure.";
                 regles += "\n• **perte de kamas** -> La cible doit donner entre 100 000 et 500 000 kamas pour la cagnotte.";
