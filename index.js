@@ -1,15 +1,15 @@
 // INIT
 
 const fs = require("fs/promises");
-
 const { token } = require("./config.json")
+const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
 
 const prefix = "!";
-const idLead = "756586259220136018"; // akro
+const idRadayne = "756586259220136018";
+const idKofrro = "272097719798071298";
+const idViking = "293095687183400970";
 const idRoleRoulette = "756956524458410024"; // octa+
 const idChannelLog = "1056681830893498379"; // maitre-executor-trace
-
-const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
 
 const client = new Client({
     intents: [
@@ -66,17 +66,24 @@ function getMSSinceMidnight(t){
 // COMMANDS
 
 async function regles(message){
-    message.channel.send(`Trop long, palu donc je lance une roulette sur <@${message.author.id}> ^^`);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    await countdownRoulette(message.channel);
-    var regles = "\nLa roulette consiste en une sentence aléatoire sur une personne choisie aléatoirement.";
-    regles += "\n\nIl y a 4 résultats possibles:\n";
-    regles += "\n• **Timeout** -> La cible est timeout pendant une durée allant de 5 minutes à 1 heure.";
-    regles += "\n• **perte de kamas** -> La cible doit donner entre 100 000 et 500 000 kamas pour la cagnotte.";
-    regles += "\n• **sauvé(e)** -> La cible est sauvée, il ne se passe rien.";
-    regles += "\n• **gain de kamas** -> La cible gagne entre 100 000 et 500 000 kamas depuis la cagnotte.";
-    regles += "\n\nDernière chose: la cagnotte n'est utilisable qu'une fois par jour par personne.";
-    message.channel.send(`Nan j'déconne, voici les règles:\n${regles}`);
+    message.guild.roles.fetch(idRoleRoulette)
+            .then(role => {
+                var regles = "La roulette permet d'appliquer une sentence aléatoirement sur un membre du serveur.";
+                regles += "\n\nIl y a 4 résultats possibles:";
+                regles += "\n• **timeout** -> La cible est timeout pendant une durée allant de 5 minutes à 1 heure.";
+                regles += "\n• **perte de kamas** -> La cible doit donner entre 100 000 et 500 000 kamas pour la cagnotte.";
+                regles += "\n• **sauvé(e)** -> La cible est sauvée, il ne se passe rien.";
+                regles += "\n• **gain de kamas** -> La cible gagne entre 100 000 et 500 000 kamas depuis la cagnotte.";
+                regles += "\n\nLa roulette peut-être utilisée de 3 manières différentes:";
+                regles += "\n• **Sans argument** -> La cible est choisie aléatoirement parmi tous les membres du serveur.";
+                regles += "\n• **Avec la mention d'un membre** -> La cible est forcément le membre mentionné dans le message.";
+                regles += "\n• **Avec la mention d'un role** -> La cible est choisie aléatoirement parmi tous les membres ayant le role mentionné.";
+                regles += "\n\nDernières choses:";
+                regles += "\n• La cagnotte n'est utilisable qu'**une fois par jour** par personne.";
+                regles += `\n• Seuls les membres ayant le role **${role.name}** peuvent utiliser la roulette ou être visés par la roulette.`;
+                message.channel.send(regles);
+            })
+            .catch(console.error);
 }
 
 function getResultRouletteRandom(){
@@ -120,7 +127,7 @@ async function getJackpotRoulette(){
 }
 
 async function canUseRoulette(id, message){
-    if (id == idLead)
+    if (id == idRadayne)
         return true;
     var uses = new Map(Object.entries(JSON.parse(await fs.readFile("useRoulette.json"))));
     var now = Date.now();
@@ -186,7 +193,7 @@ async function countdownRoulette(channel){
 }
 
 function applyRoulette(member, channel){
-    var result = member.id == idLead ? "sauvé(e)" : getResultRouletteRandom();
+    var result = member.id == idRadayne ? "sauvé(e)" : getResultRouletteRandom();
     getValueRoulette(member, result)
         .then(val => {
             writeLogRoulette(channel.guild, member, result, val);
@@ -219,7 +226,6 @@ async function roulette(message){
             .catch(console.error);
     else if (await canUseRoulette(message.author.id, message)){
         await countdownRoulette(message.channel);
-        var usernameTmp = message.content.split(' ')[1];
         // Rnd by role
         if (message.mentions.roles.size >= 1){
             message.guild.members.list({limit : 500})
@@ -251,33 +257,13 @@ async function roulette(message){
                 applyRoulette(message.mentions.members.at(0), message.channel);
         }
         // Rnd
-        else if (typeof usernameTmp === 'undefined')
+        else
             message.guild.members.list({limit : 500})
                 .then(list => {
                     rndIdx = rand(message.guild.memberCount);
                     while (!hasRole(list.at(rndIdx), idRoleRoulette))
                         rndIdx = rand(message.guild.memberCount);
                     applyRoulette(list.at(rndIdx), message.channel);
-                })
-                .catch(console.error)
-        // By name
-        else
-            message.guild.members.list({limit : 500})
-                .then(list => {
-                    var found = false;
-                    for (var [key, value] of list)
-                        if (value.displayName.toLowerCase().startsWith(usernameTmp.toLowerCase())){
-                            found = true;
-                            if (!hasRole(value, idRoleRoulette))
-                                message.guild.roles.fetch(idRoleRoulette)
-                                    .then(role => message.channel.send(`Commande utilisable que sur les membres ayant le rôle **${role.name}**`))
-                                    .catch(console.error);
-                            else
-                                applyRoulette(value, message.channel);
-                            break;
-                        }
-                    if (!found)
-                        message.channel.send(`Personne dans le serveur n'a un pseudo commençant par **${usernameTmp}**`);
                 })
                 .catch(console.error)
     }
@@ -291,8 +277,8 @@ async function jackpot(message){
 
 var modeRoulette = 0;
 function changeModeRoulette(message){
-    if (message.author.id != idLead)
-        message.guild.members.fetch(idLead)
+    if (message.author.id != idRadayne)
+        message.guild.members.fetch(idRadayne)
             .then(member => message.channel.send(`Commande utilisable que par **${member.displayName}**`))
             .catch(console.error);
     else if (modeRoulette === 0){
@@ -306,8 +292,8 @@ function changeModeRoulette(message){
 }
 
 function killMember(message){
-    if (message.author.id != idLead)
-        message.guild.members.fetch(idLead)
+    if (message.author.id != idRadayne)
+        message.guild.members.fetch(idRadayne)
             .then(member => message.channel.send(`Commande utilisable que par **${member.displayName}**`))
             .catch(console.error);
     else if (message.mentions.members.size >= 1){
@@ -324,8 +310,8 @@ function killMember(message){
 
 var canKill = false;
 function killMode(message){
-    if (message.author.id != idLead)
-        message.guild.members.fetch(idLead)
+    if (message.author.id != idRadayne)
+        message.guild.members.fetch(idRadayne)
             .then(member => message.channel.send(`Commande utilisable que par **${member.displayName}**`))
             .catch(console.error);
     else {
@@ -338,8 +324,8 @@ function killMode(message){
 }
 
 function clean(message){
-    if (message.author.id != idLead)
-        message.guild.members.fetch(idLead)
+    if (message.author.id != idRadayne)
+        message.guild.members.fetch(idRadayne)
             .then(member => message.channel.send(`Commande utilisable que par **${member.displayName}**`))
             .catch(console.error);
     else if (message.mentions.members.size >= 1){
@@ -367,8 +353,8 @@ function clean(message){
 }
 
 function ava(message){
-    if (message.author.id != idLead)
-        message.guild.members.fetch(idLead)
+    if (message.author.id != idRadayne)
+        message.guild.members.fetch(idRadayne)
             .then(member => message.channel.send(`Commande utilisable que par **${member.displayName}**`))
             .catch(console.error);
     else if (message.mentions.roles.size >= 1){
@@ -455,8 +441,8 @@ function koffro(message){
 }
 
 function razzia(message){
-    if (message.author.id != "293095687183400970")
-        message.guild.members.fetch("293095687183400970")
+    if (message.author.id != idViking)
+        message.guild.members.fetch(idViking)
             .then(member => message.channel.send(`Commande utilisable que par **${member.displayName}**`))
             .catch(console.error);
     else if (message.mentions.members.size == 0)
@@ -465,6 +451,11 @@ function razzia(message){
         var targetId = message.mentions.members.at(0).id;
         message.channel.send(`<@!${targetId}> razzia ALLO FDP PK T EZ GROS BOOUFFONN <@!${targetId}> razzia ALLO FDP PK T EZ GROS BOOUFFONN <@!${targetId}> razzia ALLO FDP PK T EZ GROS BOOUFFONN <@!${targetId}> razzia ALLO FDP PK T EZ GROS BOOUFFONN <@!${targetId}> razzia ALLO FDP PK T EZ GROS BOOUFFONN <@!${targetId}> razzia ALLO FDP PK T EZ GROS BOOUFFONN`);
     }
+}
+
+function test(message){
+    if (message.author.id != idKofrro)
+        return;
 }
 
 // messageCreate Event
@@ -497,11 +488,6 @@ client.on("messageCreate", message => {
             mapMessageCreate[nameFunction](message);
     }
 })
-
-function test(message){
-    if (message.author.id != "272097719798071298")
-        return;
-}
 
 // LOGIN
 
