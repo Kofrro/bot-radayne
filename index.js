@@ -73,7 +73,7 @@ async function regles(message){
                 regles += "\n• **perte de kamas** -> La cible doit donner entre 100 000 et 500 000 kamas pour la cagnotte.";
                 regles += "\n• **sauvé(e)** -> La cible est sauvée, il ne se passe rien.";
                 regles += "\n• **gain de kamas** -> La cible gagne entre 100 000 et 500 000 kamas depuis la cagnotte.";
-                regles += "\n\nLa roulette peut-être utilisée de 3 manières différentes:";
+                regles += "\n\nLa roulette peut être utilisée de 3 manières différentes:";
                 regles += "\n• **Sans argument** -> La cible est choisie aléatoirement parmi tous les membres du serveur.";
                 regles += "\n• **Avec la mention d'un membre** -> La cible est forcément le membre mentionné dans le message.";
                 regles += "\n• **Avec la mention d'un role** -> La cible est choisie aléatoirement parmi tous les membres ayant le role mentionné.";
