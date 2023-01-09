@@ -452,6 +452,10 @@ function razzia(message){
     }
 }
 
+function rat(message){
+    message.channel.send("Aller nique ta grand mère de là je burn sur ta tante avec ma mt09 espèce de dent d':rat:");
+}
+
 function test(message){
     if (message.author.id != idKofrro)
         return;
@@ -477,6 +481,7 @@ const mapMessageCreate = {
     "gasy"          : gasy,
     "koffro"        : koffro,
     "razzia"        : razzia,
+    "rat"           : rat,
     "test"          : test
 }
 
