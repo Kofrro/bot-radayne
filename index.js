@@ -456,6 +456,10 @@ function rat(message){
     message.channel.send("Aller nique ta grand mère de là je burn sur ta tante avec ma mt09 espèce de dent d':rat:");
 }
 
+function chibro(message){
+    message.channel.send("https://media.discordapp.net/attachments/779099386654883900/1052329940110037052/ezgif-1-aa1cc2237f.gif");
+}
+
 function test(message){
     if (message.author.id != idKofrro)
         return;
@@ -482,6 +486,7 @@ const mapMessageCreate = {
     "koffro"        : koffro,
     "razzia"        : razzia,
     "rat"           : rat,
+    "chibro"        : chibro,
     "test"          : test
 }
 
