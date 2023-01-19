@@ -175,6 +175,7 @@ async function getEmbedRoulette(member, result, value){
     embed.setThumbnail(member.displayAvatarURL());
     embed.setImage(urlImageKoala);
     embed.setTimestamp();
+    embed.setFooter({ text: `From **${rouletteUser}**`, iconURL: 'https://tenor.com/view/koala-wink-eating-gif-15030453' });
     return embed;
 }
 
@@ -460,6 +461,10 @@ function chibro(message){
     message.channel.send("https://media.discordapp.net/attachments/779099386654883900/1052329940110037052/ezgif-1-aa1cc2237f.gif");
 }
 
+function ratxvik(message){
+    message.channel.send("Khabiba et Vinkiinga envoyez les clefs du vaisseau au lieu de me dépouiller :khabiba: :khaking:\nhttps://tenor.com/view/the-sims-the-sims4-sims-sims4-star-wars-gif-18394246");
+}
+
 function test(message){
     if (message.author.id != idKofrro)
         return;
@@ -487,6 +492,7 @@ const mapMessageCreate = {
     "razzia"        : razzia,
     "rat"           : rat,
     "chibro"        : chibro,
+    "ratxvik"       : ratxvik,
     "test"          : test
 }
 
