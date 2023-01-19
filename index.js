@@ -175,7 +175,7 @@ async function getEmbedRoulette(member, result, value){
     embed.setThumbnail(member.displayAvatarURL());
     embed.setImage(urlImageKoala);
     embed.setTimestamp();
-    embed.setFooter({ text: `From **${rouletteUser}**`, iconURL: 'https://tenor.com/view/koala-wink-eating-gif-15030453' });
+    embed.setFooter({ text: `From ${rouletteUser}`});
     return embed;
 }
 
@@ -462,7 +462,8 @@ function chibro(message){
 }
 
 function ratxvik(message){
-    message.channel.send("Khabiba et Vinkiinga envoyez les clefs du vaisseau au lieu de me dépouiller :khabiba: :khaking:\nhttps://tenor.com/view/the-sims-the-sims4-sims-sims4-star-wars-gif-18394246");
+    message.channel.send("Khabiba et Vinkiinga envoyez les clefs du vaisseau au lieu de me dépouiller :khabiba: :khaking:");
+    message.channel.send("https://tenor.com/view/the-sims-the-sims4-sims-sims4-star-wars-gif-18394246");
 }
 
 function test(message){
